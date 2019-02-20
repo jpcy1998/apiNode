@@ -5,6 +5,7 @@ const router = Router()
 const connection = require('../database')
 const moment = require('moment')
 
+//Listar clientes
 router.get('/clientes', (req, res) => {
     connection.query("select id,nombre,apellido,email,date_format(fec_crea, '%d/%m/%Y') as fecCrea from clientes", (err, rows) => {
         if (!err) {
@@ -15,6 +16,7 @@ router.get('/clientes', (req, res) => {
     })
 })
 
+//Obtener cliente por id
 router.get('/clientes/:id', (req, res) => {
     const {
         id
@@ -28,6 +30,7 @@ router.get('/clientes/:id', (req, res) => {
     })
 })
 
+//Insertar cliente
 router.post('/clientes', (req, res) => {
     const {
         nombre,
@@ -44,6 +47,9 @@ router.post('/clientes', (req, res) => {
                 });
             } else {
                 console.log(err);
+                res.status(400).json({
+                    estado: err.sqlMessage
+                });
             }
         })
     } else {
@@ -51,6 +57,7 @@ router.post('/clientes', (req, res) => {
     }
 })
 
+//Actualizar cliente
 router.put('/clientes/:id', (req, res) => {
     const {
         id
@@ -76,6 +83,7 @@ router.put('/clientes/:id', (req, res) => {
     }
 })
 
+//Eliminar cliente
 router.delete('/clientes/:id', (req, res) => {
     const {
         id
@@ -89,6 +97,24 @@ router.delete('/clientes/:id', (req, res) => {
             console.log(err);
         }
     });
-});
+})
+
+router.get('/clientes/buscar/:nomape', (req, res) => {
+    const {
+        nomape
+    } = req.params;
+
+    if (nomape) {
+        connection.query("SELECT * from clientes WHERE concat(nombre,' ',apellido) like concat(?,'%') or concat(apellido,' ',nombre) like concat(?,'%')", [nomape, nomape], (err, rows) => {
+            if (!err) {
+                res.json(rows);
+            } else {
+                console.log(err);
+            }
+        })
+    } else {
+        res.status(204).json();
+    }
+})
 
 module.exports = router
